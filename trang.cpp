@@ -1,35 +1,46 @@
 #include "headers.h"
-#include <stdio.h>
+
 
 const GLint altura = 650 , largu = 650;
 
-GLuint VAO,VBO,shader;
+GLuint VAO,VBO,shader,uniformXmove;
+
+bool direction = true;
+float triOffset = 0.0f;
+float triMaxOffset = 0.7f;
+float triIncrement = 0.005f;
 
 //vertix shaders
-static const char* vShader =  "                                                  \n\ 
-#version 330 core                                                                \n\
-layout (location = 0) in vec3 position;                                          \n\
-                                                                                 \n\
-void main(){                                                                     \n\
-   gl_Position = vec4(0.8 * position.x, 0.5 * position.y, position.z, 1.0);      \n\                                                                         
+// Vertex shader
+static const char* vShader = "                                                \n\
+#version 330                                                                  \n\
+layout (location = 0) in vec3 position;                                       \n\
+uniform float xMove;                                                         \n\
+void main()                                                                  \n\
+{                                                                            \n\
+    gl_Position = vec4(0.4 * position.x + xMove, 0.5 * position.y, position.z, 1.0); \n\
 }";
 
-//fragment shaders
-
-static const char* fShader =  "                                                  \n\ 
-#version 330 core                                                                \n\
-out vec4 colour;                                                                 \n\
-                                                                                 \n\
-void main(){                                                                     \n\
-  colour  = vec4(0.9 , 0.3 , 0.4 , 1.0);                                         \n\                                                                          
+// Fragment shader
+static const char* fShader = "                                                \n\
+#version 330                                                                  \n\
+out vec4 colour;                                                              \n\
+void main()                                                                   \n\
+{                                                                             \n\
+    colour = vec4(0.9 , 0.3 , 0.4 , 1.0);                                    \n\
 }";
+
 
 void triangulo(){
     GLfloat vertices []{
         -0.8f,-0.8f,0.0f,
         0.8f,-0.8f,0.0f,
-        0.0f,0.8f,0.0f
+        0.8f,0.8f,0.0f,
+        -0.8f,0.8f,0.0f
+       
     };
+
+    //paramos aqui 
 
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
@@ -146,10 +157,21 @@ int main(){
     while(!glfwWindowShouldClose(janela)){
         glfwPollEvents();
 
+        if(direction){
+            triOffset += triIncrement;
+        }else{
+            triOffset -= triIncrement;
+        }if(abs(triOffset) >= triMaxOffset){
+            direction =!direction;
+        }
+
+
         glClearColor(0.9f, 0.9f, 0.9f, 0.2f);
         glClear(GL_COLOR_BUFFER_BIT);
        
         glUseProgram(shader);
+
+        glUniform1f(uniformXmove, triOffset);
         
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0 , 3);
